@@ -101,7 +101,7 @@ export const getResource = async (req, res, next) => {
 // @access  Private (Owner only)
 export const shareResource = async (req, res, next) => {
     try {
-        const { userId, permission } = req.body;
+        const { userId, email, username, permission } = req.body;
 
         let resource = await Resource.findById(req.params.id);
 
@@ -114,13 +114,31 @@ export const shareResource = async (req, res, next) => {
             return res.status(403).json({ success: false, error: 'Not authorized to share this resource' });
         }
 
+        let targetUserId = userId;
+
+        // If email or username provided, find the user
+        if (!targetUserId && (email || username)) {
+            const user = await User.findOne({
+                $or: [{ email }, { username }]
+            });
+
+            if (!user) {
+                return res.status(404).json({ success: false, error: 'User to share with not found' });
+            }
+            targetUserId = user._id;
+        }
+
+        if (!targetUserId) {
+            return res.status(400).json({ success: false, error: 'Please provide a userId, email, or username' });
+        }
+
         // Check if already shared
-        const alreadyShared = resource.sharedWith.find(share => share.user.toString() === userId);
+        const alreadyShared = resource.sharedWith.find(share => share.user.toString() === targetUserId.toString());
 
         if (alreadyShared) {
             alreadyShared.permission = permission;
         } else {
-            resource.sharedWith.push({ user: userId, permission });
+            resource.sharedWith.push({ user: targetUserId, permission });
         }
 
         await resource.save();

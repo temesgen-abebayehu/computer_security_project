@@ -20,7 +20,7 @@ router.post('/login', login);
 router.post('/verify-otp', verifyOtp);
 router.get('/logout', logout);
 router.get('/me', protect, getMe);
-router.put('/verifyemail/:token', verifyEmail);
+router.get('/verifyemail/:token', verifyEmail);
 router.put('/updatedetails', protect, updateDetails);
 router.put('/updatepassword', protect, updatePassword);
 

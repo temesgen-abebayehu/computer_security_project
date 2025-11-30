@@ -8,6 +8,11 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a name']
   },
+  username: {
+    type: String,
+    required: [true, 'Please add a username'],
+    unique: true
+  },
   email: {
     type: String,
     required: [true, 'Please add an email'],
@@ -47,7 +52,7 @@ const UserSchema = new mongoose.Schema({
   verificationTokenExpire: Date,
   resetPasswordToken: String,
   resetPasswordExpire: Date,
-  
+
   // MFA
   otpSecret: {
     type: String,
@@ -57,14 +62,14 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  
+
   // Account Lockout
   loginAttempts: {
     type: Number,
     default: 0
   },
   lockUntil: Date,
-  
+
   createdAt: {
     type: Date,
     default: Date.now
@@ -72,7 +77,7 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Encrypt password using bcrypt
-UserSchema.pre('save', async function(next) {
+UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     next();
   }
@@ -82,19 +87,19 @@ UserSchema.pre('save', async function(next) {
 });
 
 // Sign JWT and return
-UserSchema.methods.getSignedJwtToken = function() {
+UserSchema.methods.getSignedJwtToken = function () {
   return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE
   });
 };
 
 // Match user entered password to hashed password in database
-UserSchema.methods.matchPassword = async function(enteredPassword) {
+UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
 // Generate and hash password token
-UserSchema.methods.getResetPasswordToken = function() {
+UserSchema.methods.getResetPasswordToken = function () {
   // Generate token
   const resetToken = crypto.randomBytes(20).toString('hex');
 
@@ -111,16 +116,16 @@ UserSchema.methods.getResetPasswordToken = function() {
 };
 
 // Generate email verification token
-UserSchema.methods.getVerificationToken = function() {
+UserSchema.methods.getVerificationToken = function () {
   const verificationToken = crypto.randomBytes(20).toString('hex');
-  
+
   this.verificationToken = crypto
     .createHash('sha256')
     .update(verificationToken)
     .digest('hex');
-    
+
   this.verificationTokenExpire = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-  
+
   return verificationToken;
 };
 

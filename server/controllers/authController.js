@@ -10,13 +10,13 @@ import logger from '../config/logger.js';
 // @access  Public
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password, captchaToken, otpEnabled } = req.body;
+    const { name, username, email, password, captchaToken, otpEnabled } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Check if user already exists (email or username)
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
-      logger.warn(`Registration failed: User already exists with email ${email}`);
-      return res.status(400).json({ success: false, error: 'User already exists' });
+      logger.warn(`Registration failed: User already exists with email ${email} or username ${username}`);
+      return res.status(400).json({ success: false, error: 'User already exists with that email or username' });
     }
 
     // check email format
@@ -41,6 +41,7 @@ export const register = async (req, res, next) => {
     // Create user
     const user = await User.create({
       name,
+      username,
       email,
       password,
       role: 'user', // Default role
@@ -53,9 +54,9 @@ export const register = async (req, res, next) => {
 
     // Create verification url
     // In a real app, this would be a frontend URL. For API testing, we return the token or use a backend route.
-    const verifyUrl = `${req.protocol}://${req.get('host')}/api/v1/auth/verifyemail/${verificationToken}`;
+    const verifyUrl = `http://localhost:3000/verify-email/${req.body.verificationToken || verificationToken}`;
 
-    const message = `You are receiving this email because you (or someone else) has requested the registration of an account.\n\nPlease make a PUT request to: \n${verifyUrl}`;
+    const message = `You are receiving this email because you (or someone else) has requested the registration of an account.\n\nPlease click the link below to verify your email: \n${verifyUrl}`;
 
     try {
       await sendEmail({
@@ -93,14 +94,16 @@ export const login = async (req, res, next) => {
 
     // Validate email & password
     if (!email || !password) {
-      return res.status(400).json({ success: false, error: 'Please provide an email and password' });
+      return res.status(400).json({ success: false, error: 'Please provide an email/username and password' });
     }
 
-    // Check for user
-    const user = await User.findOne({ email }).select('+password +otpEnabled +loginAttempts +lockUntil');
+    // Check for user by email OR username
+    const user = await User.findOne({
+      $or: [{ email: email }, { username: email }]
+    }).select('+password +otpEnabled +loginAttempts +lockUntil');
 
     if (!user) {
-      logger.warn(`Login failed: Invalid credentials for email ${email}`);
+      logger.warn(`Login failed: Invalid credentials for identifier ${email}`);
       return res.status(401).json({ success: false, error: 'Invalid credentials' });
     }
 
@@ -201,7 +204,7 @@ export const verifyOtp = async (req, res, next) => {
 };
 
 // @desc    Verify Email
-// @route   PUT /api/auth/verifyemail/:token
+// @route   GET /api/auth/verifyemail/:token
 // @access  Public
 export const verifyEmail = async (req, res, next) => {
   try {
