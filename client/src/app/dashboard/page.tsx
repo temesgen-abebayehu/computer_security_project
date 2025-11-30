@@ -161,7 +161,7 @@ export default function Dashboard() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
                             <textarea
-                                className="w-full p-2 border rounded-md"
+                                className="w-full p-2 border rounded-md text-gray-900"
                                 value={createForm.content}
                                 onChange={(e) => setCreateForm({ ...createForm, content: e.target.value })}
                                 required
@@ -170,7 +170,7 @@ export default function Dashboard() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Sensitivity Level</label>
                             <select
-                                className="w-full p-2 border rounded-md"
+                                className="w-full p-2 border rounded-md text-gray-900"
                                 value={createForm.sensitivityLevel}
                                 onChange={(e) => setCreateForm({ ...createForm, sensitivityLevel: e.target.value })}
                             >
@@ -217,7 +217,7 @@ export default function Dashboard() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Permission</label>
                             <select
-                                className="w-full p-2 border rounded-md"
+                                className="w-full p-2 border rounded-md text-gray-900"
                                 value={shareForm.permission}
                                 onChange={(e) => setShareForm({ ...shareForm, permission: e.target.value })}
                             >
