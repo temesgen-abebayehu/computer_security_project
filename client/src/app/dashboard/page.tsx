@@ -127,8 +127,8 @@ export default function Dashboard() {
                                         <div>
                                             <h3 className="font-medium text-gray-900">{res.name}</h3>
                                             <span className={`inline-block mt-1 text-xs px-2 py-1 rounded-full ${res.sensitivityLevel === 'public' ? 'bg-green-100 text-green-800' :
-                                                    res.sensitivityLevel === 'internal' ? 'bg-blue-100 text-blue-800' :
-                                                        'bg-red-100 text-red-800'
+                                                res.sensitivityLevel === 'internal' ? 'bg-blue-100 text-blue-800' :
+                                                    'bg-red-100 text-red-800'
                                                 }`}>
                                                 {res.sensitivityLevel}
                                             </span>
