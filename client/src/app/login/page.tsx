@@ -1,20 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-    const { login, verifyOtp } = useAuth();
+    const { login, verifyOtp, user } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [otp, setOtp] = useState("");
     const [step, setStep] = useState<"login" | "otp">("login");
     const [userId, setUserId] = useState("");
     const [error, setError] = useState("");
+    const router = useRouter();
+
+    useEffect(() => {
+        if (user) {
+            router.push("/dashboard");
+        }
+    }, [user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

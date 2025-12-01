@@ -66,14 +66,27 @@ export const getResource = async (req, res, next) => {
             return res.status(404).json({ success: false, error: 'Resource not found' });
         }
 
-        // 1. MAC Check (Mandatory Access Control)
-        const levels = { 'public': 0, 'internal': 1, 'confidential': 2 };
-        const userLevel = levels[req.user.sensitivityLevel];
-        const resourceLevel = levels[resource.sensitivityLevel];
+        // 1. MAC Check (Mapped to Roles)
+        const resourceLevels = { 'public': 0, 'internal': 1, 'confidential': 2 };
+        const resourceLevel = resourceLevels[resource.sensitivityLevel];
 
-        if (userLevel < resourceLevel) {
-            logger.warn(`MAC Access Denied: User ${req.user.id} (${req.user.sensitivityLevel}) tried to access ${resource.sensitivityLevel} resource ${resource.id}`);
-            return res.status(403).json({ success: false, error: 'Access Denied: Insufficient clearance.' });
+        // Define Role Clearance
+        // user: Public only
+        // employee, manager: Internal & Public
+        // hr, admin: Confidential, Internal & Public
+        const roleClearance = {
+            'user': 0,
+            'employee': 1,
+            'manager': 1,
+            'hr': 2,
+            'admin': 2
+        };
+
+        const userClearance = roleClearance[req.user.role] || 0;
+
+        if (userClearance < resourceLevel) {
+            logger.warn(`MAC Access Denied: User ${req.user.id} (${req.user.role}) tried to access ${resource.sensitivityLevel} resource ${resource.id}`);
+            return res.status(403).json({ success: false, error: 'Access Denied: Your role does not have sufficient clearance for this resource.' });
         }
 
         // 2. DAC Check (Discretionary Access Control)

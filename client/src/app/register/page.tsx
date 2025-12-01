@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import Link from "next/link";
 import ReCAPTCHA from "react-google-recaptcha";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
-    const { register } = useAuth();
+    const { register, user } = useAuth();
+    const router = useRouter();
     const [formData, setFormData] = useState({
         name: "",
         username: "",
@@ -21,6 +23,12 @@ export default function RegisterPage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
     const recaptchaRef = useRef<ReCAPTCHA>(null);
+
+    useEffect(() => {
+        if (user) {
+            router.push("/dashboard");
+        }
+    }, [user, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

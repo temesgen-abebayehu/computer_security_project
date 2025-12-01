@@ -66,7 +66,13 @@ export default function Dashboard() {
         e.preventDefault();
         setError("");
         try {
-            await api.put(`/resources/${selectedResource._id}/share`, shareForm);
+            // Send the input value as both email and username so the backend checks both
+            const payload = {
+                email: shareForm.email,
+                username: shareForm.email,
+                permission: shareForm.permission
+            };
+            await api.put(`/resources/${selectedResource._id}/share`, payload);
             setIsShareOpen(false);
             setShareForm({ email: "", permission: "read" });
             setSuccessMsg("Resource shared successfully!");
@@ -104,6 +110,11 @@ export default function Dashboard() {
                         <p className="text-gray-600">Welcome back, {user.name} ({user.role})</p>
                     </div>
                     <div className="space-x-4">
+                        {user.role === 'admin' && (
+                            <Button onClick={() => router.push("/admin")} className="bg-purple-600 hover:bg-purple-700">
+                                Admin Panel
+                            </Button>
+                        )}
                         <Button onClick={() => setIsCreateOpen(true)}>Create Resource</Button>
                         <Button onClick={logout} variant="secondary">Logout</Button>
                     </div>
